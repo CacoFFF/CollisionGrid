@@ -1,16 +1,16 @@
 CXX = g++
 
-SONAME = CollisionGrid.so
+PACKAGENAME = CollisionGrid
 
-CXXFLAGS = -std=gnu++11 -m32 -msse -msse2 -O3 -mfpmath=sse -rdynamic -fPIC -flto -fomit-frame-pointer -fpermissive -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-strict-aliasing -ffunction-sections -fvisibility=hidden -Wall
+include ../../makefile-common
 
-LDFLAGS = -shared -export-dynamic -Wl,--gc-sections -Wl,-soname,$(SONAME)
+INCLUDES = -I. -I../../Core/Inc -I../../Engine/Inc -I../../CacusLib -I/usr/include/i386-linux-gnu/
 
-OUTPUT = ../../System/$(SONAME)
+#CXXFLAGS = -std=gnu++17 -m32 -msse -msse2 -O3 -mfpmath=sse -rdynamic -fPIC -flto -fomit-frame-pointer -fpermissive -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-strict-aliasing -ffunction-sections -fvisibility=hidden -Werror
+
+#LDFLAGS = -shared -m32 -export-dynamic -Wl,--gc-sections -Wl,-soname,$(SONAME)
 
 LIBS = ../../System/Core.so ../../System/Engine.so 
-
-OBJDIR = Obj/
 
 SRCS = API_Generic.cpp CollisionGrid.cpp ContainerLogic.cpp GridQueries.cpp
 
@@ -29,7 +29,7 @@ $(OUTPUT) : $(OBJS)
 
 #Compile
 $(OBJS) : $(OBJDIR)%.o : %.cpp
-	$(CXX) -c $(CXXFLAGS) $(INCLUDES) -o $@ $< > $(OBJDIR)$*.lst
+	$(CXX) -c $(PREPROCESSORS) $(CXXFLAGS) $(INCLUDES) -o $@ $< > $(OBJDIR)$*.lst
 
 #Generate dependancies
 #%.d : %.cpp

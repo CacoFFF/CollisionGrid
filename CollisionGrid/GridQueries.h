@@ -31,7 +31,7 @@ namespace Query
 template<class T> class Base
 {
 public:
-	Grid*           Grid;
+	Grid*           GridPtr;
 	FCheckResult*   ResultList;
 	FMemStack&      Mem;
 	uint32          ActorQueryFlags;
@@ -139,7 +139,7 @@ Initializes the query's state (full or on-demand)
 //
 template<class T>
 inline cg::Query::Base<T>::Base( FCollisionGrid* InCollisionGrid, FMemStack& InMem, uint32 InActorQueryFlags, uint32 InExtraNodeFlags)
-	: Grid            (InCollisionGrid->Grid)
+	: GridPtr         (InCollisionGrid->Grid)
 	, ResultList      (nullptr)
 	, Mem             (InMem)
 	, ActorQueryFlags (InActorQueryFlags)
@@ -150,7 +150,7 @@ inline cg::Query::Base<T>::Base( FCollisionGrid* InCollisionGrid, FMemStack& InM
 
 template<class T>
 inline cg::Query::BoxBounded<T>::BoxBounded( FCollisionGrid* InCollisionGrid, FMemStack& InMem, uint32 InActorQueryFlags, uint32 InExtraNodeFlags, cg::Box InBounds)
-	: Base(BASE_CTOR_PARAMS)
+	: Base<T>(BASE_CTOR_PARAMS)
 	, Bounds(InBounds)
 {
 }
@@ -206,17 +206,17 @@ inline void cg::Query::Base<T>::Query()
 
 inline void cg::Query::Radius::Query()
 {
-	QueryActors(Grid->Actors);
+	QueryActors(GridPtr->Actors);
 
 	cg::Integers Min, Max;
 	cg::Vector Expand( SearchRadius);
-	Grid->BoundsToGrid( SearchOrigin-Expand, SearchOrigin+Expand, Min, Max);
+	GridPtr->BoundsToGrid( SearchOrigin-Expand, SearchOrigin+Expand, Min, Max);
 
 	for ( int i=Min.i ; i<=Max.i ; i++ )
 	for ( int j=Min.j ; j<=Max.j ; j++ )
 	for ( int k=Min.k ; k<=Max.k ; k++ )			
 	{
-		GridElement* Element = Grid->Node(i,j,k);
+		GridElement* Element = GridPtr->Node(i,j,k);
 		if ( Element )
 			QueryActors(Element->Actors);
 	}
@@ -225,16 +225,16 @@ inline void cg::Query::Radius::Query()
 template<class T>
 inline void cg::Query::BoxBounded<T>::Query()
 {
-	static_cast<Base<T>*>(this)->QueryActors(Grid->Actors);
+	static_cast<Base<T>*>(this)->QueryActors(this->GridPtr->Actors);
 
 	cg::Integers Min, Max;
-	Grid->BoundsToGrid( Bounds.Min, Bounds.Max, Min, Max);
+	this->GridPtr->BoundsToGrid( Bounds.Min, Bounds.Max, Min, Max);
 
 	for ( int i=Min.i ; i<=Max.i ; i++ )
 	for ( int j=Min.j ; j<=Max.j ; j++ )
 	for ( int k=Min.k ; k<=Max.k ; k++ )			
 	{
-		GridElement* Element = Grid->Node(i,j,k);
+		GridElement* Element = this->GridPtr->Node(i,j,k);
 		if ( Element )
 			static_cast<T*>(this)->QueryActors(Element->Actors);
 	}
@@ -242,7 +242,7 @@ inline void cg::Query::BoxBounded<T>::Query()
 
 inline void cg::Query::Line::Query()
 {
-	QueryActors(Grid->Actors);
+	QueryActors(GridPtr->Actors);
 
 	// Start inside the grid, do not go past this point if line doesn't intersect it
 	cg::Vector FixedStart = GridStart();
@@ -251,12 +251,12 @@ inline void cg::Query::Line::Query()
 
 	cg::Integers iEnd, iStart;
 	cg::Vector Expand = (End - FixedStart).SignFloatsNoZero() * Extent;
-	Grid->BoundsToGrid( End+Extent, FixedStart-Extent, iEnd, iStart);
+	GridPtr->BoundsToGrid( End+Extent, FixedStart-Extent, iEnd, iStart);
 
 	// One grid element, no need to traverse
 	if ( iStart == iEnd )
 	{
-		GridElement* Element = Grid->Node(iStart);
+		GridElement* Element = GridPtr->Node(iStart);
 		if ( Element )
 			QueryActors(Element->Actors);
 		return;
@@ -278,7 +278,7 @@ inline void cg::Query::Line::Query()
 		cg::Integers iGrid = iStart;
 		while ( true )
 		{
-			GridElement* Element = Grid->Node(iGrid);
+			GridElement* Element = GridPtr->Node(iGrid);
 			if ( Element )
 				QueryActors(Element->Actors);
 
@@ -305,10 +305,10 @@ inline void cg::Query::Line::Query()
 				for ( bFound_k=false; ; iGrid.k+=iAdv.k)
 				{
 					// Process intersection, query actors
-					bIntersect = Intersects(Grid->GetNodeBoundingBox(iGrid));
+					bIntersect = Intersects(GridPtr->GetNodeBoundingBox(iGrid));
 					if ( bIntersect )
 					{
-						GridElement* Element = Grid->Node(iGrid);
+						GridElement* Element = GridPtr->Node(iGrid);
 						if ( Element )
 							QueryActors(Element->Actors);
 					}
@@ -476,7 +476,7 @@ inline bool cg::Query::Line::Intersects( const cg::Box& Box)
 //TODO: THIS IS NEEDED TO ENSURE THE GRID WON'T HAVE PROBLEMS IN ADDITIVE LEVELS
 inline cg::Vector cg::Query::Line::GridStart()
 {
-	cg::Box Box = Grid->Box;
+	cg::Box Box = GridPtr->Box;
 	Box.ExpandBounds( cg::Vector(1,1,1,0) );
 	if ( Box.Contains3(Start) )
 		return Start;

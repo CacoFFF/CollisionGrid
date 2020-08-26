@@ -87,7 +87,7 @@ PlainText PlainText::operator+(int32 N)
 {
 	static TCHAR Buf[32];
 #if __GNUC__
-	sprintf(Buf,"%i",N);
+	swprintf(Buf,32,L"%i",N);
 #elif UNICODE
 	_itow( N, Buf, 10);
 #else

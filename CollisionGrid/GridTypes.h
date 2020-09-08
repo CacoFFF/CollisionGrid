@@ -236,7 +236,7 @@ struct DE Grid
 //
 // Customized element holder for ActorInfo(s) (should contain ~ elements)
 //
-class ActorInfoHolder : public TElementHolder<ActorInfo,1500>
+class ActorInfoHolder : public TElementHolder<ActorInfo,1500,EHF_ZeroInit>
 {
 public:
 	//Picks up a new element, will create new holder if no new elements

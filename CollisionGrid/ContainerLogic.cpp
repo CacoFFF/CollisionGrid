@@ -21,7 +21,7 @@ void ActorInfo::Init( AActor* InActor)
 	Flags.bIsMovingBrush = InActor->IsMovingBrush();
 	if ( InActor->Brush )
 	{
-		GridBox.ExpandBounds( cg::Vector( 2.0f, 2.0f, 2.0f, 0)); //Just in case
+		GridBox.ExpandBounds( cg::Vector( 2.0f, 2.0f, 2.0f) ); //Just in case
 		Flags.bBoxReject = true;
 	}
 
@@ -57,7 +57,7 @@ Grid::Grid( ULevel* Level)
 	if ( Model->RootOutside )
 	{
 		Size = cg::Integers( 128, 128, 128, 0);
-		Box = cg::Box( cg::Vector(-32768,-32768,-32768,0), cg::Vector(32768,32768,32768,0), E_Strict);
+		Box = cg::Box( cg::Vector(-32768,-32768,-32768), cg::Vector(32768,32768,32768), E_Strict);
 	}
 	else
 	{

@@ -147,8 +147,10 @@ struct DE Vector
 	{}
 
 	Vector( float iX, float iY, float iZ, float iW = 0)
-		: X(iX) , Y(iY) , Z(iZ) , W(iW)
-	{}
+//		: X(iX) , Y(iY) , Z(iZ) , W(iW)
+	{
+		_mm_storeu_ps( &X, _mm_set_ps(iW,iZ,iY,iX));
+	}
 
 	Vector( float U)
 	{
@@ -308,8 +310,8 @@ struct DE Vector
 		__m128 mm_lcmp = _mm_cmplt_ps( mm_this, _mm_setzero_ps()); //bits to 1 if lesser (TODO: EVALUATE IF INVERT IS CHEAPER)
 		return _mm_or_ps
 		(
-			_mm_and_ps( mm_gcmp, _mm_set_ps( 1, 1, 1,0)),
-			_mm_and_ps( mm_lcmp, _mm_set_ps(-1,-1,-1,0))
+			_mm_and_ps( mm_gcmp, _mm_set_ps( 0, 1, 1, 1)),
+			_mm_and_ps( mm_lcmp, _mm_set_ps( 0,-1,-1,-1))
 		);
 	}
 
@@ -427,35 +429,34 @@ struct DE Box
 	//Construct a box containing all of Unreal vectors in the list
 	Box( FVector* VList, int32 VNum)
 	{
-//		const uint32 imask = 0xFFFFFFFF;
 		const float boundmin = -32768.f;
 		const float boundmax = 32768.f; //Unreal bounds
-		float* fArray = (float*)VList;
 
 		//Load last vector first
-		VNum--;
-		__m128 mi = _mm_castsi128_ps( _mm_loadl_epi64( (__m128i*)(fArray+3*VNum) )); //X,Y,0,0
-		__m128 ma = _mm_load_ss( fArray + 3*VNum + 2 ); //Z,0,0,0
-		mi = _mm_movelh_ps( mi, ma); //X,Y,Z,0
-		ma = mi;
+		FVector* VLast = VList + (--VNum);
+		__m128 mi = _mm<0>(*VLast);
+		__m128 ma = mi;
+
 		//Now expand using other vectors
-		for ( int32 i=0 ; i<VNum ; i++ )
+		while ( VList < VLast )
 		{
-			__m128 v = _mm_loadu_ps( fArray);
+			__m128 v = _mm_loadu_ps(&VList->X);
 			mi = _mm_min_ps( mi, v );
 			ma = _mm_max_ps( ma, v );
-			fArray += 3;
+			VList++;
 		}
+
 		//Clamp to unreal bounds
 		__m128 mb = _mm_load_ps1( &boundmin);
 		mi = _mm_max_ps( mi, mb);
 		mb = _mm_load_ps1( &boundmax);
 		ma = _mm_min_ps( ma, mb);
+
 		//Set W=0
 		__m128 mask = _mm_load_ps( (const float*) &Vector::MASK_3D); //m,m,m,0
-//		mask = _mm_pshufd_ps( mask, 0b11000000); 
 		mi = _mm_and_ps( mi, mask);
 		ma = _mm_and_ps( ma, mask);
+
 		//Save
 		_mm_storeu_ps( *Min, mi);
 		_mm_storeu_ps( *Max, ma);

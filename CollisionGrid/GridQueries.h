@@ -168,6 +168,7 @@ inline cg::Query::Encroachment::Encroachment( FCollisionGrid* InCollisionGrid, F
 	, Primitive(InActor->GetPrimitive())
 	, bCheckWorld(InActor->IsBrush())
 {
+//	Bounds.ExpandBounds( cg::Vector(2,2,2) );
 }
 
 inline cg::Query::Point::Point( FCollisionGrid* InCollisionGrid, FMemStack& InMem, uint32 InActorQueryFlags, uint32 InExtraNodeFlags, const FVector& InLocation, const FVector& InExtent)
@@ -251,7 +252,7 @@ inline void cg::Query::Line::Query()
 
 	cg::Integers iEnd, iStart;
 	cg::Vector Expand = (End - FixedStart).SignFloatsNoZero() * Extent;
-	GridPtr->BoundsToGrid( End+Extent, FixedStart-Extent, iEnd, iStart);
+	GridPtr->BoundsToGrid( End+Expand, FixedStart-Expand, iEnd, iStart);
 
 	// One grid element, no need to traverse
 	if ( iStart == iEnd )

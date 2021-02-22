@@ -35,9 +35,7 @@ bool ActorInfo::IsValid() const
 	else if ( UObject::GetIndexedObject(ObjIndex) != Actor )
 		debugf( TEXT("[CG] ActorInfo::IsValid -> Using invalid object"));
 	else if ( Actor->bDeleteMe || !Actor->bCollideActors )
-		debugf( TEXT("[CG] ActorInfo::IsValid -> %s shouldn't be in the grid"), Actor->GetName() );
-//	else if ( reinterpret_cast<ActorInfo*>(Actor->CollisionTag) != this )
-//		debugf( TEXT("[CG] ActorInfo::IsValid -> Mismatching CollisionTag"));
+	{/*	debugf( TEXT("[CG] ActorInfo::IsValid -> %s shouldn't be in the grid"), Actor->GetName() );*/}
 	else
 		return true;
 	return false;

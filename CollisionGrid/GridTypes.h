@@ -157,7 +157,7 @@ public:
 	{
 		if ( Index < --ArrayNum )
 			(*this)(Index) = (*this)(ArrayNum);
-		(*this)(ArrayNum) = 0; //Temporary
+//		(*this)(ArrayNum) = 0; //Temporary
 		if ( !ArrayNum )
 			ActorQueryFlags = 0;
 	}
